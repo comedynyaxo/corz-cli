@@ -1079,9 +1079,10 @@ export function fromModelsDevProvider(provider: ModelsDev.Provider): Info {
   const remap = PROVIDER_REMAP[provider.id]
   const resolvedId = remap?.id ?? provider.id
   const resolvedName = remap?.name ?? provider.name
+  const resolvedProviderID = ProviderID.make(resolvedId)
   const models: Record<string, Model> = {}
   for (const [key, model] of Object.entries(provider.models)) {
-    models[key] = fromModelsDevModel(provider, model)
+    models[key] = { ...fromModelsDevModel(provider, model), providerID: resolvedProviderID }
     for (const [mode, opts] of Object.entries(model.experimental?.modes ?? {})) {
       const id = `${model.id}-${mode}`
       const base = fromModelsDevModel(provider, model)
@@ -1099,6 +1100,7 @@ export function fromModelsDevProvider(provider: ModelsDev.Provider): Info {
             )
           : base.options,
         headers: opts.provider?.headers ?? base.headers,
+        providerID: resolvedProviderID,
       }
     }
   }

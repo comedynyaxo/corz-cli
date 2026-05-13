@@ -1063,7 +1063,22 @@ function fromModelsDevModel(provider: ModelsDev.Provider, model: ModelsDev.Model
   }
 }
 
+const PROVIDER_REMAP: Record<string, { id: string; name: string }> = {
+  opencode: { id: "corz", name: "Corz" },
+  "opencode-go": { id: "corz-go", name: "Corz Go" },
+}
+const PROVIDER_REMAP_REVERSE: Record<string, string> = Object.fromEntries(
+  Object.entries(PROVIDER_REMAP).map(([k, v]) => [v.id, k]),
+)
+
+export function remapProviderID(id: string): string {
+  return PROVIDER_REMAP[id]?.id ?? id
+}
+
 export function fromModelsDevProvider(provider: ModelsDev.Provider): Info {
+  const remap = PROVIDER_REMAP[provider.id]
+  const resolvedId = remap?.id ?? provider.id
+  const resolvedName = remap?.name ?? provider.name
   const models: Record<string, Model> = {}
   for (const [key, model] of Object.entries(provider.models)) {
     models[key] = fromModelsDevModel(provider, model)
@@ -1088,9 +1103,9 @@ export function fromModelsDevProvider(provider: ModelsDev.Provider): Info {
     }
   }
   return {
-    id: ProviderID.make(provider.id),
+    id: ProviderID.make(resolvedId),
     source: "custom",
-    name: provider.name,
+    name: resolvedName,
     env: [...(provider.env ?? [])],
     options: {},
     models,
@@ -1117,7 +1132,11 @@ const layer: Layer.Layer<
         const bridge = yield* EffectBridge.make()
         const cfg = yield* config.get()
         const modelsDev = yield* modelsDevSvc.get()
-        const database = mapValues(modelsDev, fromModelsDevProvider)
+        const rawDatabase = mapValues(modelsDev, fromModelsDevProvider)
+        const database: typeof rawDatabase = {}
+        for (const [key, value] of Object.entries(rawDatabase)) {
+          database[PROVIDER_REMAP[key]?.id ?? key] = value
+        }
 
         const providers: Record<ProviderID, Info> = {} as Record<ProviderID, Info>
         const languages = new Map<string, LanguageModelV3>()
@@ -1213,7 +1232,7 @@ const layer: Layer.Layer<
               model.provider?.npm ??
               provider.npm ??
               existingModel?.api.npm ??
-              modelsDev[providerID]?.npm ??
+              (modelsDev[providerID] ?? modelsDev[PROVIDER_REMAP_REVERSE[providerID]])?.npm ??
               "@ai-sdk/openai-compatible"
             const name = iife(() => {
               if (model.name) return model.name
@@ -1225,7 +1244,7 @@ const layer: Layer.Layer<
               api: {
                 id: apiID,
                 npm: apiNpm,
-                url: model.provider?.api ?? provider?.api ?? existingModel?.api.url ?? modelsDev[providerID]?.api ?? "",
+                url: model.provider?.api ?? provider?.api ?? existingModel?.api.url ?? (modelsDev[providerID] ?? modelsDev[PROVIDER_REMAP_REVERSE[providerID]])?.api ?? "",
               },
               status: model.status ?? existingModel?.status ?? "active",
               name,

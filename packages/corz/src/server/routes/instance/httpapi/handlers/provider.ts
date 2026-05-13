@@ -3,7 +3,7 @@ import { Config } from "@/config/config"
 import { ModelsDev } from "@/provider/models"
 import { Provider } from "@/provider/provider"
 import { ProviderID } from "@/provider/schema"
-import { mapValues } from "remeda"
+
 import { Effect, Schema } from "effect"
 import { HttpServerRequest, HttpServerResponse } from "effect/unstable/http"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
@@ -43,13 +43,16 @@ export const providerHandlers = HttpApiBuilder.group(InstanceHttpApi, "provider"
       const enabled = config.enabled_providers ? new Set(config.enabled_providers) : undefined
       const filtered: Record<string, (typeof all)[string]> = {}
       for (const [key, value] of Object.entries(all)) {
-        if ((enabled ? enabled.has(key) : true) && !disabled.has(key)) filtered[key] = value
+        const remappedKey = Provider.remapProviderID(key)
+        if ((enabled ? enabled.has(key) || enabled.has(remappedKey) : true) && !disabled.has(key) && !disabled.has(remappedKey)) filtered[key] = value
       }
       const connected = yield* provider.list()
-      const providers = Object.assign(
-        mapValues(filtered, (item) => Provider.fromModelsDevProvider(item)),
-        connected,
-      )
+      const mapped: Record<string, Provider.Info> = {}
+      for (const [key, item] of Object.entries(filtered)) {
+        const info = Provider.fromModelsDevProvider(item)
+        mapped[info.id] = info
+      }
+      const providers = Object.assign(mapped, connected)
       return {
         all: Object.values(providers).map(Provider.toPublicInfo),
         default: Provider.defaultModelIDs(providers),

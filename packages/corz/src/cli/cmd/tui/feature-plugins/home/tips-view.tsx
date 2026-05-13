@@ -1,10 +1,8 @@
 import type { TuiPluginApi } from "@corz-ai/plugin/tui"
 import { createMemo, For, type Accessor } from "solid-js"
-import { DEFAULT_THEMES, useTheme } from "@tui/context/theme"
+import { useTheme } from "@tui/context/theme"
 import { Flag } from "@corz-ai/core/flag/flag"
 import { useCommandShortcut } from "../../keymap"
-
-const themeCount = Object.keys(DEFAULT_THEMES).length
 
 type TipPart = { text: string; highlight: boolean }
 type TipShortcut = Accessor<string>
@@ -174,7 +172,7 @@ const TIPS: Tip[] = [
   (shortcuts) => `Use ${commandText("/editor", shortcuts.editorOpen())} to compose messages in your external editor`,
   "Run {highlight}/init{/highlight} to auto-generate project rules based on your codebase",
   (shortcuts) => `Use ${commandText("/models", shortcuts.modelList())} to see and switch between available AI models`,
-  (shortcuts) => `Use ${commandText("/themes", shortcuts.themeList())} to switch between ${themeCount} built-in themes`,
+  (shortcuts) => `Use ${commandText("/status", shortcuts.statusView())} to check your connection and usage`,
   (shortcuts) => `Use ${commandText("/new", shortcuts.sessionNew())} to start a fresh conversation session`,
   (shortcuts) => `Use ${commandText("/sessions", shortcuts.sessionList())} to list and continue previous conversations`,
   ...(Flag.CORZ_EXPERIMENTAL_SESSION_SWITCHING
@@ -200,7 +198,7 @@ const TIPS: Tip[] = [
   "Run {highlight}/connect{/highlight} to add API keys for 75+ supported LLM providers",
   (shortcuts) => `The leader key is ${shortcutText(shortcuts.leader())}; combine with other keys for quick actions`,
   (shortcuts) => press(shortcuts.modelCycleRecent(), "to quickly switch between recently used models"),
-  (shortcuts) => press(shortcuts.sessionSidebarToggle(), "in a session to show or hide the sidebar panel"),
+  (shortcuts) => press(shortcuts.sessionTimeline(), "to browse session history and timeline"),
   (shortcuts) =>
     shortcuts.messagesPageUp() && shortcuts.messagesPageDown()
       ? `Use ${shortcutText(shortcuts.messagesPageUp())}/${shortcutText(shortcuts.messagesPageDown())} to navigate through conversation history`

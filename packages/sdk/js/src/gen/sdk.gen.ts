@@ -1154,7 +1154,7 @@ class Event extends _HeyApiClient {
   }
 }
 
-export class OpencodeClient extends _HeyApiClient {
+export class CorzClient extends _HeyApiClient {
   /**
    * Respond to a permission request
    */

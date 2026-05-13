@@ -1,6 +1,6 @@
-# OpenCode Desktop
+# Corz Desktop
 
-The OpenCode Desktop app, built with Electron.
+The Corz Desktop app, built with Electron.
 
 ## Development
 

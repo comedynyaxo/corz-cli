@@ -4,7 +4,7 @@ import { OtlpLogger, OtlpSerialization } from "effect/unstable/observability"
 import * as EffectLogger from "./logger"
 import { Flag } from "../flag/flag"
 import { InstallationChannel, InstallationVersion } from "../installation/version"
-import { ensureProcessMetadata } from "../util/opencode-process"
+import { ensureProcessMetadata } from "../util/corz-process"
 
 const base = Flag.OTEL_EXPORTER_OTLP_ENDPOINT
 export const enabled = !!base
@@ -40,14 +40,14 @@ export function resource(): { serviceName: string; serviceVersion: string; attri
   })()
 
   return {
-    serviceName: "opencode",
+    serviceName: "corz",
     serviceVersion: InstallationVersion,
     attributes: {
       ...attributes,
       "deployment.environment.name": InstallationChannel,
-      "opencode.client": Flag.OPENCODE_CLIENT,
-      "opencode.process_role": processMetadata.processRole,
-      "opencode.run_id": processMetadata.runID,
+      "corz.client": Flag.CORZ_CLIENT,
+      "corz.process_role": processMetadata.processRole,
+      "corz.run_id": processMetadata.runID,
       "service.instance.id": processID,
     },
   }

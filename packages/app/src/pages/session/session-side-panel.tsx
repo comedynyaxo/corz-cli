@@ -1,16 +1,16 @@
 import { For, Match, Show, Switch, createEffect, createMemo, onCleanup, type JSX } from "solid-js"
 import { createStore } from "solid-js/store"
 import { createMediaQuery } from "@solid-primitives/media"
-import { Tabs } from "@opencode-ai/ui/tabs"
-import { IconButton } from "@opencode-ai/ui/icon-button"
-import { TooltipKeybind } from "@opencode-ai/ui/tooltip"
-import { ResizeHandle } from "@opencode-ai/ui/resize-handle"
-import { Mark } from "@opencode-ai/ui/logo"
+import { Tabs } from "@corz-ai/ui/tabs"
+import { IconButton } from "@corz-ai/ui/icon-button"
+import { TooltipKeybind } from "@corz-ai/ui/tooltip"
+import { ResizeHandle } from "@corz-ai/ui/resize-handle"
+import { Mark } from "@corz-ai/ui/logo"
 import { DragDropProvider, DragDropSensors, DragOverlay, SortableProvider, closestCenter } from "@thisbeyond/solid-dnd"
 import type { DragEvent } from "@thisbeyond/solid-dnd"
-import type { SnapshotFileDiff, VcsFileDiff } from "@opencode-ai/sdk/v2"
+import type { SnapshotFileDiff, VcsFileDiff } from "@corz-ai/sdk/v2"
 import { ConstrainDragYAxis, getDraggableId } from "@/utils/solid-dnd"
-import { useDialog } from "@opencode-ai/ui/context/dialog"
+import { useDialog } from "@corz-ai/ui/context/dialog"
 
 import FileTree from "@/components/file-tree"
 import { SessionContextUsage } from "@/components/session-context-usage"
@@ -61,7 +61,7 @@ export function SessionSidePanel(props: {
   const shown = createMemo(
     () =>
       platform.platform !== "desktop" ||
-      import.meta.env.VITE_OPENCODE_CHANNEL !== "beta" ||
+      import.meta.env.VITE_CORZ_CHANNEL !== "beta" ||
       settings.general.showFileTree(),
   )
 

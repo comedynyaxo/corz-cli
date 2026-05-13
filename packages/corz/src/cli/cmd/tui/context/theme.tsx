@@ -155,7 +155,7 @@ const [store, setStore] = createStore<State>({
   themes: listThemes(),
   mode: "dark",
   lock: undefined,
-  active: "corz",
+  active: "system",
   ready: false,
 })
 
@@ -320,8 +320,8 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
         }
         draft.mode = mode
         draft.lock = lock
-        const active = config.theme ?? kv.get("theme", "corz")
-        draft.active = typeof active === "string" ? active : "corz"
+        const active = config.theme ?? kv.get("theme", "system")
+        draft.active = typeof active === "string" ? active : "system"
         draft.ready = false
       }),
     )
@@ -340,7 +340,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
             syncThemes()
           })
           .catch(() => {
-            setStore("active", "corz")
+            setStore("active", "system")
           }),
       ]).finally(() => {
         setStore("ready", true)
@@ -361,7 +361,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
             if (store.active === "system") {
               setStore("active", "corz")
             }
-            return
+            return // fallback to corz if system theme detection fails
           }
           systemTheme = generateSystem(colors, mode)
           syncThemes()
@@ -371,7 +371,7 @@ export const { use: useTheme, provider: ThemeProvider } = createSimpleContext({
           syncThemes()
           if (store.active === "system") {
             setStore("active", "corz")
-          }
+          } // fallback to corz if system theme detection fails
         })
     }
 

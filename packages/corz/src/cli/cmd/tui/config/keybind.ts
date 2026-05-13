@@ -61,10 +61,6 @@ export const Definitions = {
   docs_open: keybind("none", "Open documentation"),
 
   editor_open: keybind("<leader>e", "Open external editor"),
-  theme_list: keybind("<leader>t", "List available themes"),
-  theme_switch_mode: keybind("none", "Switch between light and dark theme mode"),
-  theme_mode_lock: keybind("none", "Lock or unlock theme mode"),
-  sidebar_toggle: keybind("<leader>b", "Toggle sidebar"),
   scrollbar_toggle: keybind("none", "Toggle session scrollbar"),
   status_view: keybind("<leader>s", "View status"),
 
@@ -248,10 +244,7 @@ export const CommandMap = {
   help_show: "help.show",
   docs_open: "docs.open",
   editor_open: "prompt.editor",
-  theme_list: "theme.switch",
-  theme_switch_mode: "theme.switch_mode",
-  theme_mode_lock: "theme.mode.lock",
-  sidebar_toggle: "session.sidebar.toggle",
+
   scrollbar_toggle: "session.toggle.scrollbar",
   status_view: "corz.status",
   session_export: "session.export",

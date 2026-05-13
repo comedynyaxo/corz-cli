@@ -52,8 +52,8 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       })
       const { theme } = useTheme()
       const colors = createMemo(() => [
-        theme.secondary,
-        theme.accent,
+        RGBA.fromHex("#7EC8E3"),
+        RGBA.fromHex("#F0D070"),
         theme.success,
         theme.warning,
         theme.primary,

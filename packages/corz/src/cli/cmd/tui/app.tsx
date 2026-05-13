@@ -37,7 +37,6 @@ import { DialogModel } from "@tui/component/dialog-model"
 import { useConnected } from "@tui/component/use-connected"
 import { DialogMcp } from "@tui/component/dialog-mcp"
 import { DialogStatus } from "@tui/component/dialog-status"
-import { DialogThemeList } from "@tui/component/dialog-theme-list"
 import { DialogHelp } from "./ui/dialog-help"
 import { DialogAgent } from "@tui/component/dialog-agent"
 import { DialogSessionList } from "@tui/component/dialog-session-list"
@@ -101,9 +100,6 @@ const appBindingCommands = [
   "provider.connect",
   "console.org.switch",
   "corz.status",
-  "theme.switch",
-  "theme.switch_mode",
-  "theme.mode.lock",
   "help.show",
   "docs.open",
   "app.debug",
@@ -275,7 +271,7 @@ function App(props: { onSnapshot?: () => Promise<string[]> }) {
   const sdk = useSDK()
   const toast = useToast()
   const themeState = useTheme()
-  const { theme, mode, setMode, locked, lock, unlock } = themeState
+  const { theme } = themeState
   const sync = useSync()
   const exit = useExit()
   const promptRef = usePromptRef()
@@ -646,34 +642,7 @@ function App(props: { onSnapshot?: () => Promise<string[]> }) {
         },
         category: "System",
       },
-      {
-        name: "theme.switch",
-        title: "Switch theme",
-        slashName: "themes",
-        run: () => {
-          dialog.replace(() => <DialogThemeList />)
-        },
-        category: "System",
-      },
-      {
-        name: "theme.switch_mode",
-        title: mode() === "dark" ? "Switch to light mode" : "Switch to dark mode",
-        run: () => {
-          setMode(mode() === "dark" ? "light" : "dark")
-          dialog.clear()
-        },
-        category: "System",
-      },
-      {
-        name: "theme.mode.lock",
-        title: locked() ? "Unlock theme mode" : "Lock theme mode",
-        run: () => {
-          if (locked()) unlock()
-          else lock()
-          dialog.clear()
-        },
-        category: "System",
-      },
+
       {
         name: "help.show",
         title: "Help",

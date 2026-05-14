@@ -1387,6 +1387,7 @@ export function Prompt(props: PromptProps) {
   const highlight = createMemo(() => {
     if (leader()) return theme.border
     if (store.mode === "shell") return theme.primary
+    if (local.mode.current() === "offline") return RGBA.fromHex("#A8D8A8")
     const agent = local.agent.current()
     if (!agent) return theme.border
     return local.agent.color(agent.name)
@@ -1453,7 +1454,9 @@ export function Prompt(props: PromptProps) {
 
   const spinnerDef = createMemo(() => {
     const agent = local.agent.current()
-    const color = agent ? local.agent.color(agent.name) : theme.border
+    const color = local.mode.current() === "offline"
+      ? RGBA.fromHex("#A8D8A8")
+      : agent ? local.agent.color(agent.name) : theme.border
     return {
       frames: createFrames({
         color,
@@ -1563,36 +1566,43 @@ export function Prompt(props: PromptProps) {
             <box flexDirection="row" flexShrink={0} paddingTop={1} gap={1} justifyContent="space-between">
               <box flexDirection="row" gap={0}>
                 <Show when={local.agent.current()} fallback={<box height={1} />}>
-                  {(agent) => (
-                    <>
-                      <text fg={fadeColor(highlight(), agentMetaAlpha())}>
-                        {"corz"}
-                      </text>
-                      <text fg={fadeColor(theme.textMuted, agentMetaAlpha())}>
-                        {" in "}
-                      </text>
-                      <text fg={fadeColor(highlight(), agentMetaAlpha())}>
-                        {store.mode === "shell" ? "shell" : agent().name}
-                      </text>
-                      <text fg={fadeColor(theme.textMuted, agentMetaAlpha())}>{" > "}</text>
-                      <Show when={store.mode === "normal"}>
-                        <text
-                          flexShrink={0}
-                          fg={fadeColor(leader() ? theme.textMuted : theme.text, modelMetaAlpha())}
-                        >
-                          {local.model.parsed().model}
+                  {(agent) => {
+                    const isOffline = () => local.mode.current() === "offline"
+                    const offlineColor = () => RGBA.fromHex("#A8D8A8")
+                    return (
+                      <>
+                        <text fg={fadeColor(isOffline() ? offlineColor() : highlight(), agentMetaAlpha())}>
+                          {"corz"}
                         </text>
-                        <Show when={showVariant()}>
-                          <text fg={fadeColor(theme.textMuted, variantMetaAlpha())}>{" · "}</text>
-                          <text>
-                            <span style={{ fg: fadeColor(theme.warning, variantMetaAlpha()), bold: true }}>
-                              {local.model.variant.current()}
-                            </span>
-                          </text>
+                        <text fg={fadeColor(theme.textMuted, agentMetaAlpha())}>
+                          {" in "}
+                        </text>
+                        <text fg={fadeColor(isOffline() ? offlineColor() : highlight(), agentMetaAlpha())}>
+                          {store.mode === "shell" ? "shell" : agent().name}
+                        </text>
+                        <Show when={isOffline()}>
+                          <text fg={fadeColor(offlineColor(), agentMetaAlpha())}>{" [offline]"}</text>
                         </Show>
-                      </Show>
-                    </>
-                  )}
+                        <text fg={fadeColor(theme.textMuted, agentMetaAlpha())}>{" > "}</text>
+                        <Show when={store.mode === "normal"}>
+                          <text
+                            flexShrink={0}
+                            fg={fadeColor(leader() ? theme.textMuted : theme.text, modelMetaAlpha())}
+                          >
+                            {local.model.parsed().model}
+                          </text>
+                          <Show when={showVariant()}>
+                            <text fg={fadeColor(theme.textMuted, variantMetaAlpha())}>{" · "}</text>
+                            <text>
+                              <span style={{ fg: fadeColor(theme.warning, variantMetaAlpha()), bold: true }}>
+                                {local.model.variant.current()}
+                              </span>
+                            </text>
+                          </Show>
+                        </Show>
+                      </>
+                    )
+                  }}
                 </Show>
               </box>
               <Show when={hasRightContent()}>

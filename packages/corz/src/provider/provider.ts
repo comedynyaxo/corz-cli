@@ -28,6 +28,7 @@ import { optionalOmitUndefined } from "@corz-ai/core/schema"
 import * as ProviderTransform from "./transform"
 import { ModelID, ProviderID } from "./schema"
 import { ModelStatus } from "./model-status"
+import { Offline } from "@/offline/offline"
 
 const log = Log.create({ service: "provider" })
 
@@ -1445,6 +1446,52 @@ const layer: Layer.Layer<
           }
 
           log.info("found", { providerID })
+        }
+
+        // Register offline provider for local llama.cpp inference
+        const offlineProviderID = ProviderID.make(Offline.PROVIDER_ID)
+        if (!disabled.has(offlineProviderID)) {
+          const offlineModelID = ModelID.make(Offline.MODEL_ID)
+          providers[offlineProviderID] = {
+            id: offlineProviderID,
+            name: "Offline (Local)",
+            source: "custom",
+            env: [],
+            options: {
+              baseURL: Offline.baseURL(),
+              apiKey: "offline",
+              name: "offline",
+            },
+            models: {
+              [Offline.MODEL_ID]: {
+                id: offlineModelID,
+                providerID: offlineProviderID,
+                api: {
+                  id: Offline.MODEL_ID,
+                  url: Offline.baseURL(),
+                  npm: "@ai-sdk/openai-compatible",
+                },
+                name: Offline.MODEL_NAME,
+                family: "qwen2.5-coder",
+                capabilities: {
+                  temperature: true,
+                  reasoning: false,
+                  attachment: false,
+                  toolcall: true,
+                  input: { text: true, audio: false, image: false, video: false, pdf: false },
+                  output: { text: true, audio: false, image: false, video: false, pdf: false },
+                  interleaved: false,
+                },
+                cost: { input: 0, output: 0, cache: { read: 0, write: 0 } },
+                limit: { context: 4096, output: 2048 },
+                status: "active",
+                options: {},
+                headers: {},
+                release_date: "",
+                variants: {},
+              },
+            },
+          }
         }
 
         return {

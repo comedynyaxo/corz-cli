@@ -53,6 +53,15 @@ import { RuntimeFlags } from "@/effect/runtime-flags"
 
 const log = Log.create({ service: "tool.registry" })
 
+const OFFLINE_PROVIDER_ID = "offline"
+
+const OFFLINE_DISABLED_TOOLS = new Set([
+  "webfetch",
+  "websearch",
+  "repo_clone",
+  "repo_overview",
+])
+
 export function webSearchEnabled(providerID: ProviderID, flags = { exa: false, parallel: false }) {
   return providerID === ProviderID.corz || flags.exa || flags.parallel
 }
@@ -302,7 +311,10 @@ export const layer: Layer.Layer<
     })
 
     const tools: Interface["tools"] = Effect.fn("ToolRegistry.tools")(function* (input) {
+      const isOffline = input.providerID === OFFLINE_PROVIDER_ID
       const filtered = (yield* all()).filter((tool) => {
+        if (isOffline && OFFLINE_DISABLED_TOOLS.has(tool.id)) return false
+
         if (tool.id === WebSearchTool.id) {
           return webSearchEnabled(input.providerID, { exa: flags.enableExa, parallel: flags.enableParallel })
         }

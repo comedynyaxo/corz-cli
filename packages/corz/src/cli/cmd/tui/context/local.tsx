@@ -1,6 +1,6 @@
 import { createStore } from "solid-js/store"
 import { createSimpleContext } from "./helper"
-import { batch, createEffect, createMemo, on } from "solid-js"
+import { batch, createEffect, createMemo, createSignal, on } from "solid-js"
 import { useSync } from "@tui/context/sync"
 import { useTheme } from "@tui/context/theme"
 import { useRoute } from "@tui/context/route"
@@ -15,6 +15,7 @@ import { useArgs } from "./args"
 import { useSDK } from "./sdk"
 import { RGBA } from "@opentui/core"
 import { Filesystem } from "@/util/filesystem"
+import { Offline } from "@/offline/offline"
 
 export function parseModel(model: string) {
   const [providerID, ...rest] = model.split("/")
@@ -597,11 +598,79 @@ export const { use: useLocal, provider: LocalProvider } = createSimpleContext({
       })
     })
 
+    const mode = iife(() => {
+      const [current, setCurrent] = createSignal<"online" | "offline">("online")
+      const [serverStatus, setServerStatus] = createSignal<"idle" | "starting" | "running" | "error">("idle")
+      const [statusMessage, setStatusMessage] = createSignal("")
+      let previousModel: { providerID: string; modelID: string } | undefined
+
+      return {
+        current,
+        serverStatus,
+        statusMessage,
+        async toggle() {
+          if (current() === "online") {
+            // Switch to offline
+            const currentModel = model.current()
+            if (currentModel && currentModel.providerID !== Offline.PROVIDER_ID) {
+              previousModel = { ...currentModel }
+            }
+            setCurrent("offline")
+            setServerStatus("starting")
+            setStatusMessage("Starting offline server...")
+            try {
+              await Offline.start((stage) => setStatusMessage(stage))
+              setServerStatus("running")
+              setStatusMessage("")
+              model.set(
+                { providerID: Offline.PROVIDER_ID, modelID: Offline.MODEL_ID },
+                { recent: true },
+              )
+              toast.show({
+                variant: "info",
+                message: "Switched to offline mode",
+                duration: 3000,
+              })
+            } catch (e) {
+              setServerStatus("error")
+              setStatusMessage(e instanceof Error ? e.message : "Failed to start offline server")
+              setCurrent("online")
+              toast.show({
+                variant: "warning",
+                message: `Failed to start offline mode: ${e instanceof Error ? e.message : "Unknown error"}`,
+                duration: 5000,
+              })
+            }
+          } else {
+            // Switch to online
+            setCurrent("online")
+            setServerStatus("idle")
+            setStatusMessage("")
+            await Offline.stop()
+            if (previousModel) {
+              model.set(previousModel, { recent: true })
+              previousModel = undefined
+            }
+            toast.show({
+              variant: "info",
+              message: "Switched to online mode",
+              duration: 3000,
+            })
+          }
+        },
+        async setMode(target: "online" | "offline") {
+          if (current() === target) return
+          await this.toggle()
+        },
+      }
+    })
+
     const result = {
       model,
       agent,
       mcp,
       session,
+      mode,
     }
     return result
   },

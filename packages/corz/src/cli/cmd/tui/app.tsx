@@ -70,6 +70,7 @@ import { CorzKeymapProvider, registerCorzKeymap, useBindings, useCorzKeymap } fr
 
 import type { EventSource } from "./context/sdk"
 import { DialogVariant } from "./component/dialog-variant"
+import { DialogMode } from "./component/dialog-mode"
 
 const appBindingCommands = [
   "command.palette.show",
@@ -97,6 +98,7 @@ const appBindingCommands = [
   "agent.cycle.reverse",
   "variant.cycle",
   "variant.list",
+  "mode.toggle",
   "provider.connect",
   "console.org.switch",
   "corz.status",
@@ -606,6 +608,17 @@ function App(props: { onSnapshot?: () => Promise<string[]> }) {
         hidden: true,
         run: () => {
           local.agent.move(-1)
+        },
+      },
+      {
+        name: "mode.toggle",
+        title: "Switch mode (online/offline)",
+        category: "Mode",
+        slashName: "mode",
+        slashAliases: ["offline", "online"],
+        desc: `Currently: ${local.mode.current()}`,
+        run: () => {
+          dialog.replace(() => <DialogMode />)
         },
       },
       {
